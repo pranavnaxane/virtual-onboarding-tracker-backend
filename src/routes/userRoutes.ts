@@ -8,7 +8,7 @@ import {
 
 const router = express.Router();
 
-router.post("/", validateToken, createUser);
+router.post("/create", validateToken, createUser);
 router.get("/list", validateToken, getUsers);
 router.get("/:id", validateToken, getUserById);
 

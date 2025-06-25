@@ -11,3 +11,14 @@ export enum USER_TYPE {
   HR = "hr",
   USER = "user",
 }
+
+export enum STATUS {
+  ACTIVE = "active",
+  DEACTIVE = "deactive",
+}
+
+export enum TASK_STATUS {
+  PENDING = "pending",
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+}
