@@ -43,11 +43,22 @@ export const login = expressAsyncHandler(
       return;
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      res.status(HTTP_STATUS_CODE.BAD_REQUEST);
-      throw new Error("Invalid credentials");
+    if(user.role === USER_TYPE.USER) {
+      if (!(user.password === password)) {
+        res.status(HTTP_STATUS_CODE.BAD_REQUEST);
+        throw new Error("Invalid credentials");
+      }
+      responseObj.token = generateToken(responseObj);
+      res.json({ message: "Logged In Successfully!", user: responseObj });
+      return;
     }
+
+    //NOTE - will integrate later 
+    // const isMatch = await bcrypt.compare(password, user.password);
+    // if (!isMatch) {
+    //   res.status(HTTP_STATUS_CODE.BAD_REQUEST);
+    //   throw new Error("Invalid credentials");
+    // }
 
     responseObj.token = generateToken(responseObj);
     res.json({ message: "Logged In Successfully!", user: responseObj });

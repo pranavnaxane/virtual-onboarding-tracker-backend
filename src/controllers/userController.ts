@@ -30,11 +30,12 @@ export const createUser = expressAsyncHandler(
         throw new Error("User already exists");
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+      // const hashedPassword = await bcrypt.hash(password, 10);
       const payload = {
         name,
         email,
-        password: hashedPassword,
+        // password: hashedPassword,
+        password: "Glober@123",
         role,
         created_by: req.user?.id,
       };
