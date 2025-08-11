@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { USER_TYPE } from "../constants";
 
-interface IUser extends Document {
+export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
@@ -11,15 +11,15 @@ interface IUser extends Document {
 
 const userSchema = new Schema<IUser>(
   {
-    email: { type: Schema.Types.String, required: true },
-    name: { type: Schema.Types.String, required: true },
-    password: { type: Schema.Types.String, required: true },
+    email: { type: String, required: true },
+    name: { type: String, required: true },
+    password: { type: String, required: true },
     role: {
-      type: Schema.Types.String,
+      type: String,
       enum: [USER_TYPE.HR, USER_TYPE.USER],
       default: USER_TYPE.USER,
     },
-    created_by: { type: Schema.Types.ObjectId, ref: "User" },
+    created_by: { type: Schema.Types.ObjectId, ref: "User" }, // HR reference
   },
   { timestamps: true }
 );

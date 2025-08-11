@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { HTTP_STATUS_CODE } from "../constants";
 
-export const validateToken = (req: any, res: any, next: NextFunction) => {
+export const validateToken = (req: any, res: Response, next: NextFunction) => {
   const authHeader = req.header("Authorization") || req.headers.authorization;
   const token = authHeader?.startsWith("Bearer")
     ? authHeader.split(" ")[1]
@@ -19,10 +19,12 @@ export const validateToken = (req: any, res: any, next: NextFunction) => {
       id: string;
       role: "hr" | "user";
     };
+
+    // Attach decoded data to request
     req.user = { id: decoded.id, role: decoded.role };
     next();
   } catch (error) {
-    res
+    return res
       .status(HTTP_STATUS_CODE.TOKEN_NOT_FOUND)
       .json({ message: "Token failed" });
   }

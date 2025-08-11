@@ -5,39 +5,46 @@ import User from "../models/userModel";
 import bcrypt from "bcryptjs";
 
 // @desc Create User
-// @route POST /api/users/create
-// @access private
+// @route POST /api/users
+// @access private (HR only)
 export const createUser = expressAsyncHandler(
   async (req: any, res: Response) => {
     const { name, email, password, role } = req.body;
 
+    // Validate input
     if (!name || !email || !password || !role) {
       res.status(HTTP_STATUS_CODE.BAD_REQUEST);
       throw new Error("Invalid request.");
     }
 
+    // Only HR can create a user
     if (req.user?.role !== USER_TYPE.HR) {
       res.status(HTTP_STATUS_CODE.UNAUTHORISED);
       throw new Error("Unauthorised user!");
     }
+
     try {
+      // Check if user already exists for this HR
       const userExists = await User.findOne({
         email,
         created_by: req.user?.id,
       });
+
       if (userExists) {
         res.status(HTTP_STATUS_CODE.BAD_REQUEST);
         throw new Error("User already exists");
       }
 
+      // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user payload
       const payload = {
         name,
         email,
         password: hashedPassword,
-        //password: "Glober@123",
         role,
-        created_by: req.user?.id,
+        created_by: req.user?.id, // store HR id
       };
 
       const newUser = await User.create(payload);
@@ -47,18 +54,21 @@ export const createUser = expressAsyncHandler(
         throw new Error("Invalid user data");
       }
 
-      res.status(HTTP_STATUS_CODE.CREATED);
-      res.json({ message: "User created successfully!", user: newUser });
+      res.status(HTTP_STATUS_CODE.CREATED).json({
+        message: "User created successfully!",
+        user: newUser,
+      });
     } catch (error) {
+      console.error(error);
       res.status(HTTP_STATUS_CODE.SERVER_ERROR);
       throw new Error("Server error");
     }
   }
 );
 
-// @desc Get Users List
-// @route POST /api/users/list
-// @access private
+// @desc Get Users List created by logged-in HR
+// @route GET /api/users/list
+// @access private (HR only)
 export const getUsers = expressAsyncHandler(async (req: any, res: Response) => {
   if (req.user?.role !== USER_TYPE.HR) {
     res.status(HTTP_STATUS_CODE.UNAUTHORISED);
@@ -73,17 +83,19 @@ export const getUsers = expressAsyncHandler(async (req: any, res: Response) => {
 
     res.json({ users: usersList });
   } catch (error) {
+    console.error(error);
     res.status(HTTP_STATUS_CODE.SERVER_ERROR);
     throw new Error("Server error");
   }
 });
 
-// @desc Get User By Id
-// @route POST /api/users/:id
-// @access private
+// @desc Get User By Id created by logged-in HR
+// @route GET /api/users/:id
+// @access private (HR only)
 export const getUserById = expressAsyncHandler(
   async (req: any, res: Response) => {
     const userId = req.params.id;
+
     if (req.user?.role !== USER_TYPE.HR) {
       res.status(HTTP_STATUS_CODE.UNAUTHORISED);
       throw new Error("Unauthorised user!");
@@ -91,7 +103,7 @@ export const getUserById = expressAsyncHandler(
 
     try {
       const user = await User.findOne({
-        id: userId,
+        _id: userId,
         created_by: req.user?.id,
       }).select("-password");
 
@@ -99,8 +111,10 @@ export const getUserById = expressAsyncHandler(
         res.status(HTTP_STATUS_CODE.NOT_FOUND);
         throw new Error("User Not Found.");
       }
+
       res.json({ user });
     } catch (error) {
+      console.error(error);
       res.status(HTTP_STATUS_CODE.SERVER_ERROR);
       throw new Error("Server error");
     }
